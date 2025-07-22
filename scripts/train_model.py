@@ -1,36 +1,34 @@
-# scripts/train_model.py
 import pandas as pd
-import numpy as np
+import os
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.metrics import classification_report, accuracy_score
-import joblib
+from sklearn.metrics import accuracy_score, f1_score
 
-# Load preprocessed data
-data = pd.read_csv("../data/crx_processed.csv")
+# Load the preprocessed data
+data_path = r'C:\Users\navee\Downloads\credit+approval\processed\crx_processed.csv'
+df = pd.read_csv(data_path)
 
-# Split into features and target
-X = data.drop("target", axis=1)
-y = data["target"]
+# Split features and target
+X = df.drop('class', axis=1)
+y = df['class']
 
-# Train-test split
+# Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initialize models
-rf = RandomForestClassifier(n_estimators=100, random_state=42)
-xgb = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, random_state=42)
-
-# Train models
+# Train Random Forest
+rf = RandomForestClassifier(random_state=42)
 rf.fit(X_train, y_train)
+
+# Train Gradient Boosting (as an XGBoost alternative)
+xgb = GradientBoostingClassifier(random_state=42)
 xgb.fit(X_train, y_train)
 
 # Save models
-joblib.dump(rf, "../models/random_forest.pkl")
-joblib.dump(xgb, "../models/xgboost.pkl")
+model_dir = r'C:\Users\navee\Downloads\credit+approval\models'
+os.makedirs(model_dir, exist_ok=True)
 
-# Evaluate models
-y_pred_rf = rf.predict(X_test)
-y_pred_xgb = xgb.predict(X_test)
+joblib.dump(rf, os.path.join(model_dir, 'random_forest.pkl'))
+joblib.dump(xgb, os.path.join(model_dir, 'xgboost.pkl'))
 
-print("Random Forest Report:\n", classification_report(y_test, y_pred_rf))
-print("XGBoost Report:\n", classification_report(y_test, y_pred_xgb))
+print("Models trained and saved successfully.")
